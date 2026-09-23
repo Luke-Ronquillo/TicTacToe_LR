@@ -37,7 +37,38 @@ public class TTT : MonoBehaviour
 
     public void MakeOptimalMove()
     {
-
+        EndTurn();
+        PlayerOption currentOtherPlayer = currentPlayer;
+        EndTurn();
+        int loseRow, loseCol = -1;
+        for (int i = 0; i < Rows; i++)
+        {
+            for (int j = 0; j < Columns; j++)
+            {
+                if (cells[i, j].current == PlayerOption.NONE)
+                {
+                    cells[i, j].current = currentPlayer;
+                    if (GetWinner() == currentPlayer)
+                    {
+                        cells[i, j].current = PlayerOption.NONE;
+                        ChooseSpace(j, i);
+                        return;
+                    }
+                    cells[i, j].current = currentOtherPlayer;
+                    if (GetWinner() == currentOtherPlayer)
+                    {
+                        cells[i, j].current = PlayerOption.NONE;
+                        loseRow = i;
+                        loseCol = j;
+                    }
+                }
+            }
+        }
+        if (loseRow != -1 && loseCol != -1)
+        {
+            ChooseSpace(loseCol, loseRow);
+            return;
+        }
     }
 
     public void ChooseSpace(int column, int row)
