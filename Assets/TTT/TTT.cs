@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,35 +40,125 @@ public class TTT : MonoBehaviour
     public void MakeOptimalMove()
     {
         // First loop checks for winning moves. Second loop checks the other players winning moves and places at those spots.
-        PlayerOption currentAI = currentPlayer;
-        for (int loop = 1; loop <= 2; loop++)
+        EndTurn();
+        PlayerOption currentOp = currentPlayer;
+        EndTurn();
+        List<int> corners = new List<int>();
+        int rowIndex = -1, colIndex = -1;
+        int emptySpace = 0;
+        for (int i = 0; i < Rows; i++)
         {
-            int emptySpace = 0;
-            for (int i = 0; i < Rows; i++)
+            for (int j = 0; j < Columns; j++)
             {
-                for (int j = 0; j < Columns; j++)
+                if (cells[i, j].current == PlayerOption.NONE)
                 {
-                    if (cells[i, j].current == PlayerOption.NONE)
+                    emptySpace++;
+                    cells[i, j].current = currentPlayer;
+                    if (GetWinner() == currentPlayer)
                     {
-                        emptySpace++;
-                        cells[i, j].current = currentPlayer;
-                        if (GetWinner() == currentPlayer)
-                        {
-                            cells[i, j].current = PlayerOption.NONE;
-                            currentPlayer = currentAI;
-                            ChooseSpace(j, i);
-                            return;
-                        }
+                        cells[i, j].current = PlayerOption.NONE;
+                        ChooseSpace(i, j);
+                        return;
                     }
+                    cells[i, j].current = currentOp;
+                    if (GetWinner() == currentOp)
+                    {
+                        rowIndex = i;
+                        colIndex = j;
+                    }
+                    cells[i, j].current = PlayerOption.NONE;
+                }
+                if ((i == 0 && j == 0) || (i == 0 && j == 2) || (i == 2 && j == 0) || (i == 2 && j == 2))
+                {
+                    if (cells[i, j].current == currentPlayer)
+                        corners.Add(1);
+                    else if (cells[i, j].current == currentOp)
+                        corners.Add(-1);
+                    else
+                        corners.Add(0);
                 }
             }
-            if (emptySpace = 9)
-            {
-                ChooseSpace((int)Math.Round((float)Columns/2.0), (int)Math.Round((float)Rows/2.0));
-                return;
-            }
-            EndTurn();
         }
+        if (rowIndex >= 0 && colIndex >= 0)
+        { 
+            ChooseSpace(rowIndex, colIndex);
+            return;
+        }
+        else if (emptySpace == 9)
+        { 
+            ChooseSpace(0, 0);
+            return;
+        }
+        else if (corners.Contains(-1) && cells[1, 1].current == PlayerOption.NONE)
+        { 
+            ChooseSpace(1, 1);
+            return;
+        }
+        else if (cells[1, 1].current != PlayerOption.NONE)
+        {
+            while (corners.Contains(1))
+            {
+                int cornerIndex = corners.IndexOf(1);
+                switch (cornerIndex)
+                {
+                    case 0:
+                        if (cells[0, 1].current == PlayerOption.NONE)
+                        { 
+                            ChooseSpace(0, 1);
+                            return;
+                        }
+                        if (cells[1, 0].current == PlayerOption.NONE)
+                        {                             
+                            ChooseSpace(1, 0);
+                            return;
+                        }
+                        break;
+                    case 1:
+                        if (cells[0, 1].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(0, 1);
+                            return;
+                        }
+                        if (cells[1, 2].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(1, 2);
+                            return;
+                        }
+                        break;
+                    case 2:
+                        if (cells[2, 1].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(2, 1);
+                            return;
+                        }
+                        if (cells[1, 0].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(1, 0);
+                            return;
+                        }
+                        break;
+                    case 3:
+                        if (cells[1, 2].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(1, 2);
+                            return;
+                        }
+                        if (cells[2, 1].current == PlayerOption.NONE)
+                        {
+                            ChooseSpace(2, 1);
+                            return;
+                        }
+                        break;
+                }
+                corners[cornerIndex] = 0;
+            }
+        }
+        do
+        {
+            rowIndex = UnityEngine.Random.Range(0, Rows);
+            colIndex = UnityEngine.Random.Range(0, Columns);
+        } while (cells[rowIndex, colIndex].current != PlayerOption.NONE && emptySpace > 0);
+        ChooseSpace(rowIndex, colIndex);
     }
 
     public void ChooseSpace(int column, int row)
