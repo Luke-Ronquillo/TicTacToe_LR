@@ -41,12 +41,14 @@ public class TTT : MonoBehaviour
         PlayerOption currentAI = currentPlayer;
         for (int loop = 1; loop <= 2; loop++)
         {
+            int emptySpace = 0;
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Columns; j++)
                 {
                     if (cells[i, j].current == PlayerOption.NONE)
                     {
+                        emptySpace++;
                         cells[i, j].current = currentPlayer;
                         if (GetWinner() == currentPlayer)
                         {
@@ -57,6 +59,11 @@ public class TTT : MonoBehaviour
                         }
                     }
                 }
+            }
+            if (emptySpace = 9)
+            {
+                ChooseSpace((int)Math.Round((float)Columns/2.0), (int)Math.Round((float)Rows/2.0));
+                return;
             }
             EndTurn();
         }
